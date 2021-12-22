@@ -10,7 +10,7 @@ class Server:
 
         #Message format
         self.magicCookie = 0xabcddcba
-        self.message_type = 0x2
+        self.message_type = 'Ben'
 
         #Create a new UDP server socket
         #family - IVP4 addresses, type - UDP protocol
@@ -23,7 +23,7 @@ class Server:
         print("Server started, listening on IP address " + self.ip)
         while True:
             #self.broad_socket.sendto('')
-            self.broad_socket.sendto(self.message_type.to_bytes(byteorder='big', length=2), ('<broadcast>', self.udp_port))
+            self.broad_socket.sendto(self.message_type.encode(), ('<broadcast>', self.udp_port))
             #message, clientAddress = self.broad_socket.recvfrom()
 
 
