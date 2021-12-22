@@ -31,7 +31,6 @@ class Server:
 
 
     def send_broadcast(self):
-        now = datetime.now()
         print("Server started, listening on IP address " + self.ip)
         message = struct.pack(self.udp_format, self.magic_cookie, self.message_type, self.tcp_port)
         while self.keep_broadcasting:
@@ -64,6 +63,13 @@ class Server:
             self.teams_details[team_name] = [client_socket,client_ip, client_port]
         self.lock_team_dict.release()
     
+    def start_game(self):
+        if len(self.teams_details.keys()) < 1: # TODO: handle with 1 good connection
+            print("walla meztaer ach sheli")
+            return
+        for team_name, details in self.teams_details.items():
+            details[0].send()
+
     def init_server(self):
         while True:
             t1 = Thread(target=self.send_broadcast, daemon=True)
@@ -75,7 +81,7 @@ class Server:
             t1.join()
             t2.join()
 
-            # self.game_mode()
+            self.start_game()
 
             # time.sleep(10)
             # self.is_palying = False
