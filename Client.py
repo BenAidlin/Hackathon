@@ -43,6 +43,9 @@ class Client:
         # send client name's team for the game
         self.conn_tcp.send(self.team_name.encode('utf-8'))
         # self.is_palying = True
+        while True:
+            question = self.conn_tcp.recv(1024).decode()
+            print(question)
 
 
 
