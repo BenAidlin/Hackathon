@@ -1,7 +1,7 @@
 import socket
 from datetime import datetime
 import threading
-from scapy.arch import get_if_addr
+from scapy.arch import get_if_addr,get_if_list
 import time
 from threading import * #Thread, acquire
 import struct
@@ -21,20 +21,24 @@ class Server:
         #family - IVP4 addresses, type - UDP protocol
         self.broad_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.broad_socket.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
-        self.ip =  socket.gethostbyname(socket.gethostname()) #get_if_addr("eth1") 
+        self.ip = socket.gethostbyname(socket.gethostname()) #get_if_addr("eth1") # TODO
         self.keep_broadcasting = True
         #self.broad_socket.bind(('', self.udp_port))
         self.welcome_tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.welcome_tcp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # self.welcome_tcp_socket.bind((self.ip, self.tcp_port))
         self.welcome_tcp_socket.bind((self.ip, self.tcp_port))
         self.lock_team_dict = threading.Lock()
         self.teams_details = {}
-
+        split_ip = self.ip.split('.')
+        split_ip[len(split_ip)-1] = '255'
+        self.subnet_broadcast_ip = '.'.join(split_ip)
 
     def send_broadcast(self):
         print("Server started, listening on IP address " + self.ip)
         message = struct.pack(self.udp_format, self.magic_cookie, self.message_type, self.tcp_port)
         while self.keep_broadcasting:
-            self.broad_socket.sendto(message, ('<broadcast>', self.udp_port))
+            self.broad_socket.sendto(message, (self.subnet_broadcast_ip, self.udp_port))
             time.sleep(1)
 
     def welcome_clients(self):
@@ -70,7 +74,7 @@ class Server:
         for team_name, details in self.teams_details.items():
             details[0].send()
 
-    def init_server(self):
+    def activate_server(self):
         while True:
             t1 = Thread(target=self.send_broadcast, daemon=True)
             t2 = Thread(target=self.welcome_clients, daemon=True)
@@ -93,7 +97,7 @@ class Server:
 
 
 server = Server(18121)
-server.init_server()
+server.activate_server()
         
 
 
