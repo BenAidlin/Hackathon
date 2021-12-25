@@ -21,7 +21,7 @@ class Server:
         #family - IVP4 addresses, type - UDP protocol
         self.broad_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.broad_socket.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
-        self.ip =  socket.gethostbyname(socket.gethostname()) #get_if_addr("eth1") 
+        self.ip = get_if_addr("eth1") # socket.gethostbyname(socket.gethostname()) #get_if_addr("eth1") 
         self.keep_broadcasting = True
         #self.broad_socket.bind(('', self.udp_port))
         self.welcome_tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
