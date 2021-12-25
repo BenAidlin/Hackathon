@@ -1,5 +1,6 @@
 import socket
 import struct
+from curtsies import Input
 
 class Client:
     def __init__(self):
@@ -37,19 +38,39 @@ class Client:
             # if connection is failed changes the variable is_playing
             self.is_palying = False
             return
+
+    def game_mode(self):        
         # send client name's team for the game
         self.conn_tcp.send(self.team_name.encode('utf-8'))
         # self.is_palying = True
         question = self.conn_tcp.recv(1024).decode()
         print(question)
         # question is either question or sorry message
+
+        # with Input(keynames="curtsies", sigint_event=True) as input_generator:
+        #     try:
+        #         while self.is_palying:
+        #             key = input_generator.send(0.1)
+        #             if key:
+        #                 print(key)
+        #                 self.conn_tcp.send((key + '\n').encode('utf-8'))
+        #     except Exception:
+        #         return
+
+        import sys
+        input = sys.stdin.read(1)
+        try:
+            self.conn_tcp.send((input + '\n').encode('utf-8'))
+            game_summary = self.conn_tcp.recv(1024).decode()
+            print(game_summary)
+        finally:
+            print("Server disconnected, listening for offer requests...")
+
+    def activate_client(self):
         while True:
-            pass
-
-
-
-
-
+            client.find_server()
+            client.game_mode()
+            
 
 
 
@@ -59,4 +80,4 @@ class Client:
 
 
 client = Client()
-client.find_server()
+client.activate_client()

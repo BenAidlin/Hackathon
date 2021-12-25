@@ -60,9 +60,11 @@ class Server:
                 self.game_started = True
                 if len(self.teams_details.keys()) < 2:
                     for team_name, details in self.teams_details.items():
+                        details[0].shutdown(socket.SHUT_RD)
                         details[0].close()
                         print(team_name + " was close")
                     self.game_started = False
+                    self.teams_details = {}
                 print('Temporarily not acceptig clients')
                 break
         self.keep_broadcasting = False
@@ -77,6 +79,7 @@ class Server:
         else:
             sorry_string = 'Sorry '+team_name+', too many players'
             client_socket.send(sorry_string.encode('utf-8'))
+            client_socket.shutdown(socket.SHUT_RD)
             client_socket.close()
         self.lock_team_dict.release()
     
@@ -93,7 +96,6 @@ class Server:
             t.join()
 
     def send_question(self,team_name, details):
-        print("enter send q")
         details[0].settimeout(10)
         try:
             welcome_string = "Welcome to Quick Maths.\nPlayer 1: " + list(self.teams_details.keys())[0] \
@@ -101,22 +103,41 @@ class Server:
                     + "\n==\nPlease asnwer the following question as fast as you can:\n" \
                         + "How mush is " + "2+2" + "?" 
             details[0].send(welcome_string.encode('utf-8'))
-            print('sending')
             answer = details[0].recv(Server.buff_size).decode()
             self.lock_answer.acquire()
             if(self.team_win is None):
                 # I answered first
-                if(answer == "4"):
+                if(str(answer) == "4"):
                     self.team_win = team_name
                 else:
                     self.team_win = [i for i in self.teams_details.keys() if i!=team_name][0]
+                over_string = "Game over!\nThe correct answer was " + "4" + "!\n\nCongratulations to the winner: " \
+                    + str(self.team_win)
+                for team_name, conn in self.teams_details.items():
+                    conn[0].send(over_string.encode('utf-8'))
             self.lock_answer.release()
         except socket.timeout:
             print('timeout')
-        over_string = "Game over!\nThe correct answer was " + "4" + "!\n\nCongratulations to the winner: " \
-            + str(self.team_win) 
-        details[0].send(over_string.encode('utf-8'))
-    
+        
+
+    def finish_game(self):
+        for team_name, conn in self.teams_details.items():
+            conn[0].shutdown(socket.SHUT_RD)
+            conn[0].close()
+        self.magic_cookie = 0xabcddcba
+        self.message_type = 0x2
+        self.udp_format = 'IbH'
+        self.keep_broadcasting = True
+        self.lock_team_dict = threading.Lock()
+        self.teams_details = {}
+        self.lock_answer = threading.Lock()
+        self.team_win = None
+        self.game_started = False
+
+        #Create a new UDP server socket
+        self.broad_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.broad_socket.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
+        
 
     def activate_server(self):
         while True:
@@ -130,14 +151,8 @@ class Server:
             t2.join()
 
             self.start_game()
-            self.keep_broadcasting = True
-            # time.sleep(10)
-            # self.is_palying = False
-
-            # self.finish_game()
-
-
-
+            self.finish_game()
+            
 
 
 server = Server()
