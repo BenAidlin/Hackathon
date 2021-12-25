@@ -1,6 +1,5 @@
 import socket
 import struct
-from curtsies import Input
 
 class Client:
     def __init__(self):
@@ -14,7 +13,7 @@ class Client:
         self.magic_cookie = 0xabcddcba
         self.message_type = 0x2
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.team_name = "Client 1"
+        self.team_name = "Client 3"
 
 
     def find_server(self):
@@ -44,15 +43,8 @@ class Client:
         question = self.conn_tcp.recv(1024).decode()
         print(question)
         # question is either question or sorry message
-        with Input(keynames="curtsies", sigint_event=True) as input_generator:
-            try:
-                while self.is_palying:
-                    key = input_generator.send(0.1)
-                    if key:
-                        print(key)
-                        self.conn_tcp.send((key + '\n').encode('utf-8'))
-            except Exception:
-                return
+        while True:
+            pass
 
 
 
