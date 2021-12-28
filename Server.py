@@ -46,7 +46,7 @@ class Server:
         message = struct.pack(self.udp_format, self.magic_cookie, self.message_type, self.tcp_port)
         while self.keep_broadcasting:
             self.broad_socket.sendto(message, (self.subnet_broadcast_ip, self.udp_port))
-            time.sleep(1)
+            time.sleep(3)
 
     def welcome_clients(self):
         self.welcome_tcp_socket.settimeout(10)
