@@ -16,7 +16,11 @@ class Server:
         self.magic_cookie = 0xabcddcba
         self.message_type = 0x2
         self.udp_format = 'IbH'
-        self.ip = socket.gethostbyname(socket.gethostname()) #get_if_addr("eth1") # TODO
+        self.ip = None
+        try: # hackathon lab
+            self.ip = get_if_addr("eth1")
+        except: # private machine
+            self.ip = socket.gethostbyname(socket.gethostname())
         self.keep_broadcasting = True
         self.lock_team_dict = threading.Lock()
         self.teams_details = {}
@@ -103,7 +107,7 @@ class Server:
                     + "\n==\nPlease asnwer the following question as fast as you can:\n" \
                         + "How mush is " + "2+2" + "?" 
             details[0].send(welcome_string.encode('utf-8'))
-            answer = details[0].recv(Server.buff_size).decode()
+            answer = details[0].recv(Server.buff_size).decode('utf-8')
             self.lock_answer.acquire()
             if(self.team_win is None):
                 # I answered first
