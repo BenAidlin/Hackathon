@@ -11,7 +11,7 @@ import time
 
 class Client:
     def __init__(self):
-        self.udp_port = 13119
+        self.udp_port = 13117
         self.tcp_port = None
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -23,6 +23,7 @@ class Client:
         self.message_type = 0x2
         self.conn_tcp = None
         self.team_name = GeorgianFood.get_random_georgian_dish()
+        # self.team_name = "khinkali"
         print("Player name: " + self.team_name)
         self.is_playing = False
         self.input = Value('i', -1) # shared value between processes
@@ -112,7 +113,8 @@ class Client:
             self.tcp_connect_to_game(address[0], int(message[2]))
             if self.is_playing: # successfull connection
                 # send user team name to the server.
-                self.conn_tcp.send(self.team_name.encode('utf-8'))
+                name = self.team_name + '\n'
+                self.conn_tcp.send(name.encode('utf-8'))
                 # start recieving messages!! this is game mode!!
                 t1 = Thread(target=self.recv_msgs, daemon=True)
                 t1.start()        

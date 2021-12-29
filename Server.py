@@ -11,7 +11,7 @@ class Server:
     link_proto = 'eth1'
     buff_size = 1024
     def __init__(self):
-        self.udp_port = 13119
+        self.udp_port = 13117
 
         #Message format
         self.magic_cookie = 0xabcddcba
