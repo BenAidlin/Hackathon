@@ -10,7 +10,7 @@ class Server:
     link_proto = 'eth1'
     buff_size = 1024
     def __init__(self):
-        self.udp_port = 13117
+        self.udp_port = 13119
 
         #Message format
         self.magic_cookie = 0xabcddcba
@@ -33,6 +33,7 @@ class Server:
         self.broad_socket.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
         split_ip = self.ip.split('.')
         split_ip[len(split_ip)-1] = '255'
+        split_ip[len(split_ip)-2] = '255'
         self.subnet_broadcast_ip = '.'.join(split_ip)
         
         #Create a new TCP server socket
@@ -46,14 +47,17 @@ class Server:
         message = struct.pack(self.udp_format, self.magic_cookie, self.message_type, self.tcp_port)
         while self.keep_broadcasting:
             self.broad_socket.sendto(message, (self.subnet_broadcast_ip, self.udp_port))
-            time.sleep(3)
+            time.sleep(1)
 
     def welcome_clients(self):
         self.welcome_tcp_socket.settimeout(10)
+        timeout = time.time() + 10.0
         self.welcome_tcp_socket.listen()
         lst = []
         while True:
-            try:                
+            try:    
+                if(time.time()>timeout):
+                    raise socket.timeout()            
                 (client_socket,(client_ip, client_port)) = self.welcome_tcp_socket.accept()
                 t = Thread(target=self.handle_client, args=(client_socket,client_ip, client_port), daemon=True)
                 lst.append(t)   

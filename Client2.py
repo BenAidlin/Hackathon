@@ -1,14 +1,16 @@
 import socket
 import struct
 from threading import *
+from multiprocessing import Process
 try: # hackathon lab
     import getch as gc
 except: #private machine
     import msvcrt as gc
 
+
 class Client:
     def __init__(self):
-        self.udp_port = 13117
+        self.udp_port = 13119
         self.tcp_port = None
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -48,16 +50,17 @@ class Client:
 
     def game_mode(self):        
         # question = self.conn_tcp.recv(1024).decode()
-        # print(question)
+        # print(question)        
         while True:
             try:
                 input = str(gc.getch().decode()) #sys.stdin.read(1)
                 if input=='c':
-                    print("Stop listening to input")
+                    print("Stop recieving input")
                     return
                 self.conn_tcp.send((input).encode('utf-8'))
             except:
                 print("No connection to server")
+        
 
     def recv_msgs(self):
         while self.is_playing:
@@ -78,8 +81,7 @@ class Client:
         self.conn_tcp = None
 
     def activate_client(self):
-        t2 = Thread(target=self.game_mode, daemon=True)
-        t2.start()        
+     
         while True:
             tup = client.find_server()
             if not tup:
@@ -90,10 +92,10 @@ class Client:
                 # send client name's team for the game
                 self.conn_tcp.send(self.team_name.encode('utf-8'))
                 t1 = Thread(target=self.recv_msgs, daemon=True)
-
+                t2 = Process(target=self.game_mode, daemon=True)
+                t2.start()   
                 t1.start()
-
-
+                
                 t1.join()
                 #t2.join(5)
 
