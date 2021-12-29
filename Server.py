@@ -19,7 +19,7 @@ class Server:
         self.udp_format = 'IbH'
         self.ip = None
         try: # hackathon lab
-            self.ip = get_if_addr("eth1")
+            self.ip = get_if_addr("eth2")
         except: # private machine
             self.ip = socket.gethostbyname(socket.gethostname())
         self.keep_broadcasting = True
